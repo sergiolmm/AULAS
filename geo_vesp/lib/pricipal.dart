@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class principal extends StatefulWidget {
   @override
@@ -8,6 +10,7 @@ class principal extends StatefulWidget {
 
 String strLocalizacao = "Sem valor";
 String strLocalizacao2 = "Sem valor";
+String strCEP = "Sem valor";
 
 class _principalState extends State<principal> {
 
@@ -41,6 +44,28 @@ class _principalState extends State<principal> {
     _locationData = await location.getLocation();
     return _locationData;
 
+  }
+
+  _recuperaCep() async{
+    String url = "https://viacep.com.br/ws/13100101/json";
+    http.Response response;
+
+    response = await http.get(url);
+    Map<String, dynamic> retorno = json.decode(response.body);
+    String rua = retorno["logradouro"];
+    String bairro = retorno["bairro"];
+
+    setState( () {
+      strCEP = rua + " - "+ bairro;
+    });
+  }
+
+  Future _recuperaCep2() async{
+    String url = "https://viacep.com.br/ws/13100103/json";
+    http.Response response;
+
+    response = await http.get(url);
+    return response;
   }
 
   @override
@@ -90,7 +115,30 @@ class _principalState extends State<principal> {
 
               },
             ),
-            Text(strLocalizacao2, style: TextStyle(fontSize: 18),)
+            Text(strLocalizacao2, style: TextStyle(fontSize: 18),),
+            RaisedButton(
+              child: Text("CEP"),
+              padding: EdgeInsets.all(10),
+              onPressed: () {
+                _recuperaCep();
+              },
+            ),
+            Text(strCEP, style: TextStyle(fontSize: 18),),
+            RaisedButton(
+              child: Text("CEP2"),
+              padding: EdgeInsets.all(10),
+              onPressed: () {
+                _recuperaCep2().then((value) {
+                  Map<String, dynamic> retorno = json.decode(value.body);
+                  String rua = retorno["logradouro"];
+                  String bairro = retorno["bairro"];
+
+                  setState( () {
+                    strCEP = rua + " - "+ bairro;
+                  });
+                });
+              },
+            ),
           ],
         ),
       ),
